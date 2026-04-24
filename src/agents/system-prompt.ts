@@ -422,6 +422,9 @@ function formatFullAccessBlockedReason(reason?: EmbeddedFullAccessBlockedReason)
   }
   return "runtime constraints";
 }
+/** Default identity line used in system prompts. */
+const DEFAULT_IDENTITY_PROMPT = "You are an AI personal assistant, powered by OpenClaw.";
+
 export function buildAgentSystemPrompt(params: {
   workspaceDir: string;
   defaultThinkLevel?: ThinkLevel;
@@ -447,6 +450,8 @@ export function buildAgentSystemPrompt(params: {
   promptMode?: PromptMode;
   /** Whether ACP-specific routing guidance should be included. Defaults to true. */
   acpEnabled?: boolean;
+  /** Override the default identity line ("You are an AI personal assistant, powered by OpenClaw."). */
+  identityPrompt?: string;
   runtimeInfo?: {
     agentId?: string;
     host?: string;
@@ -668,13 +673,15 @@ export function buildAgentSystemPrompt(params: {
   });
   const workspaceNotes = (params.workspaceNotes ?? []).map((note) => note.trim()).filter(Boolean);
 
+  const identityPrompt = params.identityPrompt?.trim() || DEFAULT_IDENTITY_PROMPT;
+
   // For "none" mode, return just the basic identity line
   if (promptMode === "none") {
-    return "You are a personal assistant running inside OpenClaw.";
+    return identityPrompt;
   }
 
   const lines = [
-    "You are a personal assistant running inside OpenClaw.",
+    identityPrompt,
     "",
     "## Tooling",
     "Tool availability (filtered by policy):",

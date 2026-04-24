@@ -1437,6 +1437,7 @@ function getCompat(model: OpenAIModeModel): {
   supportsStrictMode: boolean;
   requiresStringContent: boolean;
   visibleReasoningDetailTypes: string[];
+  omitStreamOptionsWithTools: boolean;
 } {
   const detected = detectCompat(model);
   const compat = model.compat ?? {};
@@ -1470,6 +1471,8 @@ function getCompat(model: OpenAIModeModel): {
     supportsStrictMode:
       (compat.supportsStrictMode as boolean | undefined) ?? detected.supportsStrictMode,
     requiresStringContent: (compat.requiresStringContent as boolean | undefined) ?? false,
+    omitStreamOptionsWithTools:
+      (compat.omitStreamOptionsWithTools as boolean | undefined) ?? false,
     visibleReasoningDetailTypes:
       (compat.visibleReasoningDetailTypes as string[] | undefined) ??
       detected.visibleReasoningDetailTypes,
@@ -1543,7 +1546,6 @@ export function buildOpenAICompletionsParams(
       ? flattenCompletionMessagesToStringContent(messages)
       : messages,
     stream: true,
-    stream_options: { include_usage: true },
   };
   if (compat.supportsStore) {
     params.store = false;
@@ -1565,6 +1567,12 @@ export function buildOpenAICompletionsParams(
     }
   } else if (hasToolHistory(context.messages)) {
     params.tools = [];
+  }
+  // GLM API silently drops tool_call responses when stream_options is combined with tools.
+  // Only include stream_options when either no tools are present or the provider explicitly supports it.
+  const hasTools = Boolean(params.tools);
+  if (!hasTools || !compat.omitStreamOptionsWithTools) {
+    params.stream_options = { include_usage: true };
   }
   const completionsReasoningEffort = resolveOpenAICompletionsReasoningEffort(options);
   const resolvedCompletionsReasoningEffort = completionsReasoningEffort

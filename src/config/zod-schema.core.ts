@@ -215,6 +215,7 @@ export const ModelCompatSchema = z
     toolCallArgumentsEncoding: z.string().optional(),
     requiresMistralToolIds: z.boolean().optional(),
     requiresOpenAiAnthropicToolPayload: z.boolean().optional(),
+    omitStreamOptionsWithTools: z.boolean().optional(),
   })
   .strict()
   .optional();

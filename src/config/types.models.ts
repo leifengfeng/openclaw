@@ -46,6 +46,8 @@ export type ModelCompatConfig = SupportedOpenAICompatFields & {
   toolCallArgumentsEncoding?: string;
   requiresMistralToolIds?: boolean;
   requiresOpenAiAnthropicToolPayload?: boolean;
+  /** When true, omit stream_options when tools are present (workaround for providers like GLM that silently drop tool_call responses when stream_options is combined with tools). */
+  omitStreamOptionsWithTools?: boolean;
 };
 
 export type ModelProviderAuthMode = "api-key" | "aws-sdk" | "oauth" | "token";
